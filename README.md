@@ -1,12 +1,17 @@
 # AdditiveDecisionTree
 
 ## Summary
-An implementation of a classifier, similar to a standard decision tree, but allowing as well an additive system.
+An implementation of a decision tree, similar to a standard decision tree, but supporting an additive approach to prediction. Both AdditiveDecitionTreeClassifier and AdditiveDecitionTreeRegressor classes are provided. This tool provides, on the whole, comparable accuracy to standard decision trees, but in many cases provides greater accuracy and/or improved interpretability. As such, it can be a useful tool for generating interpretable models and may be considered an XAI tool. It is not intended to be competitive with approaches such as boosting in terms of accuracy, but simply a tool to generate interpretable models. It can often produce models comparable in accuracy to considerably deeper standard decision trees, so may have a lower overall complexity compared to these. 
 
-- if we keep, explain rotataion features
-- if we keep, explain arithmetic features
+This tool addresses some well-known limitations of decision trees, in particular their limited stability and their necessity to split based on fewer and fewer samples lower in the trees. These limitations are typically addressed by ensembling decision trees, either through bagging or boosting, but these result highly uninterpretable, though generally more accurate, models. 
 
-Are few classes of models considered interpretable. Mostly: decision trees, decision tables, rule lists, rule sets, and GAMs. 
+The intuition behind AdditiveDecisionTrees in that often the true function (f(x)), mapping the input X to the target y, is based on conditions and in other cases it is simply a probabalistic funtion where each input feature may be considered independently. The latter case may be modelled better by linear or logistic regressions, which simply predict based on a weighted sum of each independent feature. That is, each relevant feature contributes to the final prediction without consideration of the other features, though interaction features may be created. f(x) may simply be based on a probability distribution associated with each input feature. 
+
+Conversely, linear and logistic regressions do not capture well where there are conditions in the function f(x), while decision trees can model these potentially quite well. It is often not know apriori, if the true f(x) contains conditions, and as such, if it is desirable to repeatedly split the data into subsets and develop a different prediction for each leaf node based entirely on the datapoints within it. 
+
+Note, this is true for regression problems, but often also for classification. Though f(x) is ultimately a set of rules for any classifiction problem, the rules may be independent of each other. 
+
+The approach taken by AdditiveDecisionTrees is to split the dataspace where appropriate and to make an aggregate decision based on numerous potential splits (all standard axis-parallel splits over different input parameters) where this appears most appropriate. 
 
 Don't need to visualize, just to explain. Global explanations with additive trees more complex than standard decision trees, but still manageable, and the accuracy is often higher. As well, typically shorter.
 
