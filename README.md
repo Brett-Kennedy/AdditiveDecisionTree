@@ -33,20 +33,40 @@ AdditiveDecisionTrees, therefore, provide a simple form of ensembling, but one t
 ## Algorithm
 The algorithm behaves similar to most pruning algorithms, starting at the bottom, at the leaves, and working towards the root node. 
 
-start at bottom, check if both children are either already considered or a leaf. 
-check accuracy of tree
-try replacing this node with a single additive node & check accuracy that way
-keep if higher, restore otherwise
+At each node, the accuracy of the tree on the training data is measured given the current split, then again treating this node as an additive node. If the accuracy is higher with this node as an additive node, it is set as such, and all nodes below it removed. This node itself may be removed later, if an ancestor node is converted to an additive node. 
 
-to predict: when get to additive node, split on all ways, combine the results. Explain the averaging.
+An additive node is a terminal node where the predictions are based on multiple splits. To make a prediction, when reaching an additive node, the prediction based on each split is made, then aggregated to create a single prediction. Multiple aggregation schemes are available for classification and regression. 
 
 ## Stats
-- explain the DatasetsEvaluator project -- large numbers, no bias, no cherry picking
-- give stats about accuracy, overall complexity -- need a metric. 
-- give stats about how many regular split nodes & how many additive nodes tend to end up with doing this
+To evaluate the effectiveness of the tool we consdidered both accuracy (macro f1-score for classificatino and normalized root mean squared error (NRMSE) for regression) and interpretability, measured by the size of the tree. Details regarding the complexity metric are included below. 
+
+To evaluate, we compared to standard decision trees, both comparing where both models used default hyperparameters, and where both models used a grid search to estimate the best parameters. DatasetsEvaluator was used to collect the datasests and run the tests. 100 randomly-selected files were used to compare default hyperparameters. Using the DatasetsEvaluator tool fascilitated testing on a large number of datasets without bias. 
+
+Results for classification on 100 datasets:
+
+| Model	| Feature Engineering Description	| Avg f1_macro	| Avg. Train-Test Gap |	Avg. Fit Time	Avg. | Complexity | 
+| ----	| ----	| ----	| ----	| ----	| ---- | 
+| DT	| Original Features	| 0.634449504	| 0.359755376	| 0.017208587	| 251.8933333 | 
+| DT	| Rotation-based Features	| 0.637339482	| 0.356865398	| 3.18966572	| 187.8866667 | 
+
+AdditiveTrees did very similar to standard decision trees with respect to accuracy, though often do better. The complextity is, however, considerably lower. This allows users to understand the models considering fewer overall rules. 
 
 
 ## Examples
+```python
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from AdditiveDecisionTree import AdditiveDecisionTreeClasssifier
+
+iris = load_iris()
+X, y = iris.data, iris.target
+X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0)
+
+adt = AdditiveDecisionTreeClasssifier()
+adt.fit(X_train, y_train)
+y_pred_test = adt.predict(X_test)
+```
+
 - give quick examples and point to example notebook & .py accuracy test
 
 ## Example Files
