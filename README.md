@@ -51,7 +51,7 @@ To evaluate, we compared to standard decision trees, both comparing where both m
 Results for classification on 100 datasets:
 
 | Model	|  Avg f1_macro	| Avg. Train-Test Gap |	Avg. Fit Time	Avg. | Complexity | 
-| ----	|  ----	| ----	| ---- | 
+| ----	|  ----	| ----	| ---- | ---- | 
 | DT	|  0.634	| 0.359	| 0.0172	| 251.893 | 
 | ADT	|  0.617	| 0.156	| 3.991	| 39.907 | 
 
