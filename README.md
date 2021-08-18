@@ -72,13 +72,10 @@ y_pred_test = adt.predict(X_test)
 ## Example Files
 Two example files are provided.
 
-Simple_Example_Additive_Decision_Tree is a notebook providing some simple examples using the model
+Simple_Example_Additive_Decision_Tree is a notebook providing some simple examples using the model.
 
-Accuracy_Test_Additive_Tree.py is a python file indended to test the accuracy of the AdditiveDecisionTrees compared to sklearn Decision Trees, evaluated over 100 datasets, for both classification and regression problems. To provide a fair comparison, tests are performed where both models use default parameters and where both use CV grid search to estimate the optinal parameters. 
+Accuracy_Test_Additive_Tree.py is a python file indended to test the accuracy and model complexity of the AdditiveDecisionTrees compared to sklearn Decision Trees, evaluated over 100 datasets, for both classification and regression problems. To provide a fair comparison, tests are performed where both models use default parameters and where both use CV grid search to estimate the optinal parameters. 
 
-
-## Methods
-- describe the methods, parameters, and return values
 
 ## Interpretability Metric
--- describe
+The evaluation uses a straightforward approach to measuring the global complexity of models, that is the overall-description of the model (as opposed to local complexity which measures the complexity of explanations for individual rows). For standard decision trees, it simply uses the number of nodes (a common metric, though others are commonly used, for example number of leaf nodes). For additive trees, we do this as well, but add a penalty for each additive node, counting it as many times as there are splits aggregated together at this node. We, therefore, measure the total number of comparisons of feature values to thresholds (the number of splits) regardless if the results are aggregated or not. Future work will consider additional metrics. 
