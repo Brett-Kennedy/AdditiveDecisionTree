@@ -66,7 +66,7 @@ def test_classification_grid_search(exclude_list, cache_folder, partial_result_f
 	datasets_tester = de.DatasetsTester()
 
 	matching_datasets = datasets_tester.find_datasets(
-		problem_type = "classification",
+		problem_type="classification",
 		min_num_numeric_features=2,
 		max_num_numeric_features=10) # Set lower to be faster
 
@@ -250,10 +250,10 @@ def main():
 
 	# datasets_tester.collect_data(max_num_datasets_used=NUM_DATASETS_REGRESSION_DEFAULT, 
 	# 							 exclude_list=exclude_list, 
- #                             	 preview_data=False, 
- #                             	 save_local_cache=True,
- #                             	 check_local_cache=True,
- #                             	 path_local_cache=cache_folder)
+ 	#                             	 preview_data=False,
+ 	#                             	 save_local_cache=True,
+ 	#                             	 check_local_cache=True,
+ 	#                             	 path_local_cache=cache_folder)
 
 	# test_regression_default_parameters(datasets_tester, partial_result_folder, results_folder)            
 	# test_regression_default_parameters_max_four(datasets_tester, partial_result_folder, results_folder)            

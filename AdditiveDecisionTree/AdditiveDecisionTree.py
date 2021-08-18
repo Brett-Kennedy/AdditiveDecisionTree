@@ -8,7 +8,6 @@ import math
 from enum import Enum 
 
 
-#todo: not tested yet or actually used below. need to mix enum & integer for feature id somehow. 
 class FeatureType(Enum):
     NOT_SPLIT = -1
     CAN_NOT_SPLIT = -2
@@ -16,7 +15,6 @@ class FeatureType(Enum):
 
 
 # Colours used in visualizations, with each class represented by a consistent colour.
-# todo: handle where there are more classes than this. This supports up to 10 target classes.
 tableau_palette_list=["tab:blue", "tab:orange","tab:green","tab:red","tab:purple","tab:brown","tab:pink","tab:gray","tab:olive","tab:cyan"]
 
 
@@ -666,7 +664,6 @@ class AdditiveDecisionTreeClasssifier(AdditiveDecisionTree):
         self.class_counts_arr.pop(e)
 
 
-
 class AdditiveDecisionTreeRegressor(AdditiveDecisionTree):
     def __init__(   self, 
                     min_samples_split=8,
@@ -677,28 +674,22 @@ class AdditiveDecisionTreeRegressor(AdditiveDecisionTree):
                     max_added_splits_per_node=5):
         super().__init__(min_samples_split, min_samples_leaf, max_depth, verbose_level, allow_additive_nodes, max_added_splits_per_node)
         self.average_y_value = []      # The average y value at each node
-        print("Starting....")
-
 
     def init_variables(self, y):
         pass
 
-
     def init_root(self, y):
         self.average_y_value.append(self.y.mean())
-
 
     # Applies only to classification.
     def check_node_complete(self, node_idx):
         return False # todo: in principle all rows may have identical y value, should check
-
 
     def update_node_stats(self, new_left_idx, new_right_idx):
         y_left = self.y.loc[self.tree_.indexes[new_left_idx]]
         self.average_y_value.append(y_left.mean())
         y_right = self.y.loc[self.tree_.indexes[new_right_idx]]
         self.average_y_value.append(y_right.mean())
-
 
     def find_best_col(self, X_local, y_local, node_idx):
         best_col_idx = -1
@@ -708,36 +699,26 @@ class AdditiveDecisionTreeRegressor(AdditiveDecisionTree):
         threshold_arr = []
 
         mse_before = mean_squared_error(y_local, [y_local.mean()]*len(y_local))
-        #print("mse_before: ", mse_before)
         for col_idx in range(len(self.X.columns)):
-            #print("col_idx: ", col_idx)
             X_local = clean_data(X_local)
             stump = tree.DecisionTreeRegressor(random_state=0, max_depth=1) # Used to get thresholds
             stump.fit(X_local[[X_local.columns[col_idx]]].values.reshape(-1,1), y_local)
-            #print("stump.tree_.threshold: ", stump.tree_.threshold)
-            threshold = stump.tree_.threshold[0]            
+            threshold = stump.tree_.threshold[0]
             over_threshold_bool_arr = X_local[X_local.columns[col_idx]]>threshold
-            #print("over_threshold_bool_arr: \n", over_threshold_bool_arr)
-            
+
             left_arr = [y_val for y_val,over_bool in zip(y_local, over_threshold_bool_arr) if over_bool == False]
-            #print("left_arr: ", left_arr)
             right_arr = [y_val for y_val,over_bool in zip(y_local, over_threshold_bool_arr) if over_bool == True]
-            #print("right_arr", right_arr)  
             if len(left_arr)==0 or len(right_arr)==0:
                 continue
             
             mean_left = np.array(left_arr).mean()
             mean_right = np.array(right_arr).mean()
             new_pred_y = [mean_left if over_bool==False else mean_right for over_bool in over_threshold_bool_arr]
-            #print("new_pred_y: ", new_pred_y)
             mse_after = mean_squared_error(y_local, new_pred_y)
-            #print("mse_after: ", mse_after)
             mse_gain = mse_before - mse_after
             mse_gain_arr.append(mse_gain)                
             threshold_arr.append(threshold)
-            #print("mse_gain: ", mse_gain)
             if (mse_gain > best_col_mse_gain and len(left_arr) >= self.min_samples_leaf and len(right_arr) >= self.min_samples_leaf):
-                #print("best mse gain thus far")
                 best_col_idx = col_idx
                 best_col_threshold = threshold
                 best_col_mse_gain = mse_gain 
@@ -751,22 +732,16 @@ class AdditiveDecisionTreeRegressor(AdditiveDecisionTree):
             good_split_found = False
 
         if best_col_idx == -1:
-            #print("case 2")
             self.tree_.can_split[node_idx] = False
             good_split_found = False
 
-        #print("returning: ", best_col_idx, best_col_threshold, best_col_mse_gain, mse_gain_arr, threshold_arr, good_split_found)
         return best_col_idx, best_col_threshold, best_col_mse_gain, mse_gain_arr, threshold_arr, good_split_found
-
 
     def create_additive_nodes(self):
 
         # Potentially replace any non-leaf nodes with additive nodes. Doing this, we do not change the size
         # of the tree or the parallel arrays, though may leave some nodes unreachable. 
         def check_node(node_index):
-            #print(f"Called check_node for {node_index}")
-            #print(f"\n\n\n  MSE gain array at node {node_index}: {self.tree_.node_best_measurement_arr[node_index]}")
-            #print(f"  mse gain at node {node_index}: {self.tree_.node_measurement[node_index]}")
             used_col = self.tree_.feature[node_index]
             used_mse_gain = self.tree_.node_measurement[node_index]
             good_cols = []
@@ -785,34 +760,23 @@ class AdditiveDecisionTreeRegressor(AdditiveDecisionTree):
                     good_cols.append(used_col)
                     good_thresholds.append(self.tree_.threshold[node_index])
 
-            #print(f"  good_cols: {good_cols}")
-            #print(f"  good_thresholds: {good_thresholds}")
-            #print(f"  good_mse_gains: {good_mse_gains}")
-            #print("  len(good_cols): ", len(good_cols))
-            #print("  Before: self.tree_.feature: ", self.tree_.feature)
-            #print("  Before: self.tree_.node_used_feature_arr: ", self.tree_.node_used_feature_arr)
             if (len(good_cols)>1):
                 # Get the training score given the current tree. todo: just get for this part of the tree -- the rest of the tree is the same
                 y_pred = self.predict(self.X, testing_additive=True) 
                 curr_train_mse = mean_squared_error(self.y, y_pred)
-                #print("  curr_train_mse: ", curr_train_mse)
 
                 # Set the average y value in the multiple splits of the data here
                 X_local = self.X.loc[self.tree_.indexes[node_index]]
                 y_local = self.y.loc[self.tree_.indexes[node_index]]
                 assert len(X_local) == len(y_local)
-                #print("  Number rows this node: ", len(X_local))
                 new_pred_y_arr = []
                 new_average_y_arr = []                
                 for i in range(len(good_cols)):
                     col_idx = good_cols[i]
                     threshold = good_thresholds[i]
                     over_threshold_bool_arr = X_local[X_local.columns[col_idx]]>threshold
-                    #print("over_threshold_bool_arr: \n", over_threshold_bool_arr)                    
                     left_arr = [y_val for y_val,over_bool in zip(y_local, over_threshold_bool_arr) if over_bool == False]
-                    #print("left_arr: ", left_arr)
                     right_arr = [y_val for y_val,over_bool in zip(y_local, over_threshold_bool_arr) if over_bool == True]
-                    #print("right_arr", right_arr)    
                     if len(left_arr) == 0 or len(right_arr)==0:
                         new_average_y_arr.append((np.NaN, np.NaN))
                     else:
@@ -838,19 +802,13 @@ class AdditiveDecisionTreeRegressor(AdditiveDecisionTree):
                 self.tree_.node_used_threshold_arr[node_index] = good_thresholds 
                 self.average_y_value_arr[node_index] = new_average_y_arr
 
-                #print("size of new_pred_y_arr:", len(new_pred_y_arr))
-                #if len(new_pred_y_arr):
-                #    print("size of new_pred_y_arr[0]:", len(new_pred_y_arr[0]))
-                #print("self.average_y_value_arr[node_index]", self.average_y_value_arr[node_index])
                 final_pred = []
                 new_pred_y_arr_np = np.array(new_pred_y_arr)
                 new_pred_y_arr_means = new_pred_y_arr_np.mean(axis=1)
-                #print("new_pred_y_arr_means", new_pred_y_arr_means)
 
                 # Determine the training score given an additive node here
                 y_pred = self.predict(self.X, testing_additive=True)
                 updated_train_mse = mean_squared_error(self.y, y_pred)
-                #print("  updated_train_mse: ", updated_train_mse)
 
                 # If the additive node did not improve the accuracy, return the tree
                 if updated_train_mse > curr_train_mse:
@@ -863,15 +821,6 @@ class AdditiveDecisionTreeRegressor(AdditiveDecisionTree):
                     self.tree_.children_left[node_index] = -2
                     self.tree_.children_right[node_index] = -2
 
-                # Remove once working. check put back right.
-                #y_pred = self.predict(self.X) 
-                #curr_train_score = f1_score(self.y, y_pred, average='macro')
-                #print("  curr_train_score restored: ", curr_train_score)
-
-        #print("Tree before create additive nodes:")
-        #self.output_tree()
-
-        #self.class_counts_arr = [[]]*len(self.tree_.feature)
         self.average_y_value_arr = [[]]*len(self.tree_.feature)
 
         # todo: recode to just go through backwards
