@@ -58,7 +58,7 @@ Results for classification on 100 datasets:
 AdditiveTrees did very similar to standard decision trees with respect to accuracy, though often do better. The complextity is, however, considerably lower. This allows users to understand the models considering fewer overall rules. 
 
 Results over 100 Classification sets: 
-[Result Plot](https://github.com/Brett-Kennedy/AdditiveDecisionTree/blob/main/Results/results_18_08_2021_14_26_34_plot.png)
+![Result Plot](https://github.com/Brett-Kennedy/AdditiveDecisionTree/blob/main/Results/results_18_08_2021_14_26_34_plot.png)
 
 This shows in, the first plot, model accuracy (higher is better) and, in the second plot, model complexity (lower is better). It can be seen here that, compared to standard decision trees, at least for the 100 random files tested, AdditiveDecisionTrees are competitive in terms of accuracy, and consistently better in terms of complexity, though altenative measures of model complexity could be used. 
 
