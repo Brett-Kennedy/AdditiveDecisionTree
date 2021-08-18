@@ -57,10 +57,8 @@ Results for classification on 100 datasets:
 
 AdditiveTrees did very similar to standard decision trees with respect to accuracy, though often do better. The complextity is, however, considerably lower. This allows users to understand the models considering fewer overall rules. 
 
-Results Plot: 
-![alt text][logo]
-
-[logo]:https://github.com/Brett-Kennedy/AdditiveDecisionTree/blob/main/Results/results_17_08_2021_17_03_55_plot.png
+Results over 100 Classification sets: 
+[Result Plot](https://github.com/Brett-Kennedy/AdditiveDecisionTree/blob/main/Results/results_17_08_2021_17_03_55_plot.png)
 
 This shows in, the first plot, model accuracy (higher is better) and, in the second plot, model complexity (lower is better). It can be seen here that, compared to standard decision trees, at least for the 100 random files tested, AdditiveDecisionTrees are competitive in terms of accuracy, and consistently better in terms of complexity, though altenative measures of model complexity could be used. 
 
@@ -82,15 +80,11 @@ y_pred_test = adt.predict(X_test)
 ## Example Files
 Two example files are provided.
 
-![**Simple_Example_Additive_Decision_Tree**][logo2]  
-
-[logo2]:https://github.com/Brett-Kennedy/AdditiveDecisionTree/blob/main/examples/Simple_Example_Additive_Decision_Tree.ipynb
+[**Simple_Example_Additive_Decision_Tree**](https://github.com/Brett-Kennedy/AdditiveDecisionTree/blob/main/examples/Simple_Example_Additive_Decision_Tree.ipynb)
 
 is a notebook providing some simple examples using the model.
 
-![**Accuracy_Test_Additive_Tree.py**][logo3] 
-
-[logo3]:https://github.com/Brett-Kennedy/AdditiveDecisionTree/blob/main/examples/Accuracy_Test_Additive_Decision_Tree.py 
+[**Accuracy_Test_Additive_Tree.py**](https://github.com/Brett-Kennedy/AdditiveDecisionTree/blob/main/examples/Accuracy_Test_Additive_Decision_Tree.py) 
 
 is a python file indended to test the accuracy and model complexity of the AdditiveDecisionTrees compared to sklearn Decision Trees, evaluated over 100 datasets, for both classification and regression problems. To provide a fair comparison, tests are performed where both models use default parameters and where both use CV grid search to estimate the optinal parameters. 
 
