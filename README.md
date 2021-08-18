@@ -82,9 +82,18 @@ y_pred_test = adt.predict(X_test)
 ## Example Files
 Two example files are provided.
 
-Simple_Example_Additive_Decision_Tree is a notebook providing some simple examples using the model.
+![**Simple_Example_Additive_Decision_Tree**][logo2]  
 
-Accuracy_Test_Additive_Tree.py is a python file indended to test the accuracy and model complexity of the AdditiveDecisionTrees compared to sklearn Decision Trees, evaluated over 100 datasets, for both classification and regression problems. To provide a fair comparison, tests are performed where both models use default parameters and where both use CV grid search to estimate the optinal parameters. 
+[logo2]:https://github.com/Brett-Kennedy/AdditiveDecisionTree/blob/main/examples/Simple_Example_Additive_Decision_Tree.ipynb
+
+is a notebook providing some simple examples using the model.
+
+![**Accuracy_Test_Additive_Tree.py**][logo3] 
+
+[logo3]:https://github.com/Brett-Kennedy/AdditiveDecisionTree/blob/main/examples/Accuracy_Test_Additive_Decision_Tree.py 
+
+is a python file indended to test the accuracy and model complexity of the AdditiveDecisionTrees compared to sklearn Decision Trees, evaluated over 100 datasets, for both classification and regression problems. To provide a fair comparison, tests are performed where both models use default parameters and where both use CV grid search to estimate the optinal parameters. 
+
 
 
 ## Interpretability Metric
