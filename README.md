@@ -30,6 +30,12 @@ This, then, produces a model where there are a small number of splits, ideally r
 
 AdditiveDecisionTrees, therefore, provide a simple form of ensembling, but one that still allows a single, interpretable model, easily supporting both global and local explanations. As it still follows a simple tree structure, contrapositive explanations may be easily generated as well. 
 
+## Intallation
+
+`
+pip install AdditiveDecisionTrees
+`
+
 ## Algorithm
 The algorithm behaves similar to most pruning algorithms, starting at the bottom, at the leaves, and working towards the root node. 
 
@@ -72,8 +78,6 @@ adt = AdditiveDecisionTreeClasssifier()
 adt.fit(X_train, y_train)
 y_pred_test = adt.predict(X_test)
 ```
-
-- give quick examples and point to example notebook & .py accuracy test
 
 ## Example Files
 Two example files are provided.
