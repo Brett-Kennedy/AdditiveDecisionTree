@@ -50,10 +50,10 @@ To evaluate, we compared to standard decision trees, both comparing where both m
 
 Results for classification on 100 datasets:
 
-| Model	| Feature Engineering Description	| Avg f1_macro	| Avg. Train-Test Gap |	Avg. Fit Time	Avg. | Complexity | 
-| ----	| ----	| ----	| ----	| ----	| ---- | 
-| DT	| Original Features	| 0.634449504	| 0.359755376	| 0.017208587	| 251.8933333 | 
-| DT	| Rotation-based Features	| 0.637339482	| 0.356865398	| 3.18966572	| 187.8866667 | 
+| Model	|  Avg f1_macro	| Avg. Train-Test Gap |	Avg. Fit Time	Avg. | Complexity | 
+| ----	|  ----	| ----	| ---- | 
+| DT	|  0.634	| 0.359	| 0.0172	| 251.893 | 
+| ADT	|  0.617	| 0.156	| 3.991	| 39.907 | 
 
 AdditiveTrees did very similar to standard decision trees with respect to accuracy, though often do better. The complextity is, however, considerably lower. This allows users to understand the models considering fewer overall rules. 
 
