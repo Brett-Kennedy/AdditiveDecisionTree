@@ -86,7 +86,7 @@ is a notebook providing some simple examples using the model.
 
 [**Accuracy_Test_Additive_Tree.py**](https://github.com/Brett-Kennedy/AdditiveDecisionTree/blob/main/examples/Accuracy_Test_Additive_Decision_Tree.py) 
 
-is a python file indended to test the accuracy and model complexity of the AdditiveDecisionTrees compared to sklearn Decision Trees, evaluated over 100 datasets, for both classification and regression problems. To provide a fair comparison, tests are performed where both models use default parameters and where both use CV grid search to estimate the optinal parameters. 
+is a python file indended to test the accuracy and model complexity of the AdditiveDecisionTrees compared to sklearn Decision Trees, evaluated over 100 datasets, for both classification and regression problems. To provide a fair comparison, tests are performed where both models use default parameters and where both use CV grid search to estimate the optinal parameters. Results for an execution of this file are included in the Results folder.
 
 
 
