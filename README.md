@@ -8,7 +8,7 @@ This tool provides, on the whole, comparable accuracy to standard decision trees
 #### Limitations of Decision Trees
 This tool addresses some well-known limitations of decision trees, in particular their limited stability, their necessity to split based on fewer and fewer samples lower in the trees, repeated sub-trees, and their tendency to overfit if not restricted or pruned. These limitations are typically addressed by ensembling decision trees, either through bagging or boosting, which results in highly uninterpretable, though generally more accurate, models. Constructing oblivious trees (this is done, for example, within CatBoost) and oblique decision trees (see: [RotationFeatures](https://github.com/Brett-Kennedy/RotationFeatures)) is another approach to mitigate some of these limitations, and also often produces more stable trees. 
 
-Decision trees are considered to be among the more interpretable models, but only where it is possible to construct them to a shallow depth, perhaps to 4 or 5 levels at most. However, decision trees often need to be fairly deep to acheive higher levels of accuracy, which can greatly undermine their interpretability. 
+Decision trees are considered to be among the more interpretable models, but only where it is possible to construct them to a shallow depth, perhaps to 4 or 5 levels at most. However, decision trees often need to be fairly deep to acheive higher levels of accuracy, which can greatly undermine their interpretability. As decision trees are likely the most, or among the most, commonly used models where interpretability is required, our comparisions, both in terms of accuracy and interpretability, are made with respect to standard decision trees. 
 
 #### Intuition Behind Additive Decision Trees
 The intuition behind AdditiveDecisionTrees in that often the true function *(f(x))*, mapping the input X to the target y, is based on logical conditions and in other cases it is simply a probabalistic function where each input feature may be considered somewhat independently (as with the Naive Bayes assumption). For example, the true f(x) may include something to the effect: 
@@ -58,6 +58,10 @@ AdditiveDecisionTrees, therefore, provide a simple form of ensembling, but one t
 `
 pip install AdditiveDecisionTrees
 `
+
+## Local Interpretability
+
+In standard decision trees, local explanations (explanations of the prediction for a single instance) are presented as the path from the root to the leaf node where the instance ends, with each split point on the path leading to this final decision. However, this can be misleading and confusing, as very often multiple rules would be just as or more appropriate. As standard decision trees split each node based on a single feature, they select the split that has the greatest information gain. The fact that other splits using other features are nearly as useful and lead to similar, though less, information gain is lost, creating the impression that only the selected feature is relevant. So, as well as less stable trees, this process can lead to lower interpretability, which is removed with Additive Decision Trees. 
 
 ## Pruning Algorithm
 The pruning algorihm executes after a tree, similar to a standard decision tree is constructed. The prunnig algorithm seeks to reduce significant sub-trees within the tree into single additive nodes, based on a small set of simple rules (comparable to the rule used in standard decsision trees, but such that the addititive nodes use multiple such rules). 
