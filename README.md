@@ -99,6 +99,9 @@ The first plot tracks the 100 datasets on the x-axis, with F1 score (macro) on y
 This shows in, the first plot, model accuracy (higher is better) and, in the second plot, model complexity (lower is better). It can be seen here that, compared to standard decision trees, at least for the 100 random files tested, AdditiveDecisionTrees are competitive in terms of accuracy, and consistently better in terms of complexity (and thus interpretability), though altenative measures of model complexity could be used. 
 
 ## Examples
+
+AdditiveDecisionTrees follow the standard sklearn fit-predict API framework. 
+
 ```python
 from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
@@ -118,11 +121,11 @@ Two example files are provided.
 
 [**Simple_Example_Additive_Decision_Tree**](https://github.com/Brett-Kennedy/AdditiveDecisionTree/blob/main/examples/Simple_Example_Additive_Decision_Tree.ipynb)
 
-is a notebook providing some simple examples using the model.
+This is a notebook providing some simple examples using the model.
 
 [**Accuracy_Test_Additive_Tree.py**](https://github.com/Brett-Kennedy/AdditiveDecisionTree/blob/main/examples/Accuracy_Test_Additive_Decision_Tree.py) 
 
-is a python file indended to test the accuracy and model complexity of the AdditiveDecisionTrees compared to sklearn Decision Trees, evaluated over 100 datasets, for both classification and regression problems. To provide a fair comparison, tests are performed where both models use default parameters and where both use CV grid search to estimate the optinal parameters. Results for an execution of this file are included in the Results folder.
+This is a python file indended to test the accuracy and model complexity of the AdditiveDecisionTrees compared to sklearn Decision Trees, evaluated over 100 datasets, for both classification and regression problems. To provide a fair comparison, tests are performed where both models use default parameters and where both use CV grid search to estimate the optinal parameters. Results for an execution of this file are included in the Results folder.
 
 
 ## Interpretability Metric
