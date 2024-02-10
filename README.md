@@ -6,29 +6,29 @@ This tool provides an implementation of a decision tree, similar to a standard d
 This tool provides, on the whole, comparable accuracy to standard decision trees, but in many cases provides greater accuracy and/or improved interpretability. As such, it can be a useful tool for generating interpretable models and may be considered a useful XAI tool. It is not intended to be competitive with approaches such as boosting or neural networks in terms of accuracy, but is simply a tool to generate interpretable models. It can often produce models comparable in accuracy to deeper standard decision trees, while having a lower overall complexity compared to these. 
 
 #### Limitations of Decision Trees
-This tool addresses some well-known limitations of decision trees, in particular their limited stability, their necessity to split based on fewer and fewer samples lower in the trees, repeated sub-trees, and their tendency to overfit if not restricted or pruned. These limitations are typically addressed by ensembling decision trees, either through bagging or boosting, which results in highly uninterpretable, though generally more accurate, models. Constructing oblivious trees (this is done, for example, within CatBoost) and oblique decision trees (see: [RotationFeatures](https://github.com/Brett-Kennedy/RotationFeatures)) is another approach to mitigate some of these limitations, and also often produces more stable trees. 
+This tool addresses some well-known limitations of decision trees, in particular their limited stability, their necessity to split based on fewer and fewer samples lower in the trees, repeated sub-trees, and their tendency to overfit if not restricted or pruned. These limitations are typically addressed by ensembling decision trees, either through bagging or boosting, which results in highly uninterpretable, though generally more accurate, models. Constructing oblivious trees (this is done, for example, within CatBoost) and oblique decision trees (see: [RotationFeatures](https://github.com/Brett-Kennedy/RotationFeatures)) aare other approaches to mitigate some of these limitations, and also often produces more stable trees. 
 
 Decision trees are considered to be among the more interpretable models, but only where it is possible to construct them to a shallow depth, perhaps to 4 or 5 levels at most. However, decision trees often need to be fairly deep to acheive higher levels of accuracy, which can greatly undermine their interpretability. As decision trees are likely the most, or among the most, commonly used models where interpretability is required, our comparisions, both in terms of accuracy and interpretability, are made with respect to standard decision trees. 
 
 #### Intuition Behind Additive Decision Trees
-The intuition behind AdditiveDecisionTrees in that often the true function *(f(x))*, mapping the input X to the target y, is based on logical conditions and in other cases it is simply a probabalistic function where each input feature may be considered somewhat independently (as with the Naive Bayes assumption). For example, the true f(x) may include something to the effect: 
+The intuition behind AdditiveDecisionTrees in that often the true function *(f(x))*, mapping the input x to the target y, is based on logical conditions; and in other cases it is simply a probabalistic function where each input feature may be considered somewhat independently (as with the Naive Bayes assumption). For example, the true f(x) may include something to the effect: 
 ```
 If A > 10 Then: y = class Y 
 Else if B < 19 Then: y = class X
 Else if C * D > 44 Then: y = class Y
 Else y = class Z. 
 ```
-In this case, the true f(x) is composed of logical conditions and may be accurately and in a simple manner represented as a series of rules, such as in a 
+In this case, the true f(x) is composed of logical conditions and may be accurately (and in a simple manner) represented as a series of rules, such as in a 
 Decision Tree, Rule List, or Rule Set. Note that conditions may be viewed as interactions, where how one feature predicts the target is depedent on the value of another columns. Here, one rule is based explicitely on the interaction C * D, but all rules entail interactions, as they may fire only if previous rules do not, and therefore the relationships between the features used in these rules is effected by other features.
 
-As well, the true f(x) may be a set of patterns related to probabilities, more of the form: 
+ON the other hand, the true f(x) may be a set of patterns related to probabilities, more of the form: 
 ```
 The higher A is, the more likely y is to be class X, regardless of B, C and D
 The higher B is, up to 100.0, the more likely y is class Y, regardless of A, C and D 
 The higher B is, where B is 100.0 or more, the more likely y is to be class Z, regardless of A, C and D
 The higher C * D is, the more likely y is class X, regardless of A and B.
 ```
-Some of these patterns may involve two or more features and some a single feature. In this form of function, for each instance, the feature values, or combinations of feature values, each contribute some probability to the target value (to each class in the case of classification), and these probabilities are summed to determine the overall probability distribution. Here feature interactions may exist within the probabalistic patterns, as in the case of C * D. 
+Some of these patterns may involve two or more features, and some a single feature. In this form of function, for each instance, the feature values (or combinations of feature values), each contribute some probability to the target value (to each class in the case of classification), and these probabilities are summed to determine the overall probability distribution. Here feature interactions may exist within the probabalistic patterns, as in the case of C * D. 
 
 While there are other means to taxonify functions, this system is quite useful, and many true functions may be viewed as some combination of these two broad classes of function. 
 
@@ -55,9 +55,7 @@ AdditiveDecisionTrees, therefore, provide a simple form of ensembling, but one t
 
 ## Intallation
 
-`
-pip install AdditiveDecisionTrees
-`
+The source code is provided in a single .py file which may be included in any project. It uses no non-standard libraries. 
 
 ## Local Interpretability
 
