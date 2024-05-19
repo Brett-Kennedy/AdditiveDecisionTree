@@ -125,6 +125,95 @@ This is a notebook providing some simple examples using the model.
 
 This is a python file indended to test the accuracy and model complexity of the AdditiveDecisionTrees compared to sklearn Decision Trees, evaluated over 100 datasets, for both classification and regression problems. To provide a fair comparison, tests are performed where both models use default parameters and where both use CV grid search to estimate the optinal parameters. Results for an execution of this file are included in the Results folder.
 
+## Methods
+
+### AdditiveDecsionTree
+
+```
+adt = AdditiveDecisionTreeClasssifier(min_samples_split=8,
+                                      min_samples_leaf=6, 
+                                      max_depth=np.inf,
+                                      verbose_level=0,
+                                      allow_additive_nodes=True,
+                                      max_added_splits_per_node=5)
+```
+
+#### Parameters
+
+**min_samples_split**: int
+
+As with standard decision trees. The minimum number of samples in a node to allow further splitting.
+
+**min_samples_leaf**: int
+
+As with standard decision trees. The minimum number of samples in that would result in a leaf node to allow further splitting.
+
+**max_depth**: int
+
+As with standard decision trees. The maximum path length from the root to any leaf node.
+
+**verbose_level**: int
+
+Controls the display of output during fitting and predicting.
+
+**allow_additive_nodes**: bool
+
+If False, behaves similar to standard decision tree.
+
+**max_added_splits_per_node**: int
+
+The maximimum number of splits that may be included in any additive node.
+
+##
+
+### fit
+```
+adt.fit(X, y)
+```
+Fit an Additive Decision Tree to the training data provided. 
+
+#### Parameters
+**X**: 2d array-like of shape (n_samples, n_features)
+
+**y**: array-like of shape (n_samples)
+   
+##
+
+### predict 
+```
+y_pred = adt.predict(X)
+```
+
+Predict the class labels for the provided data.
+
+##
+
+### output_tree 
+```
+adt.output_tree()
+```
+
+Outputs a summary of the full tree including all nodes
+
+##
+
+### get_model_complexity 
+```
+adt.get_model_complexity()
+```
+
+Outputs a score indicating the number of nodes, counting additive nodes based on the number of splits they aggregate.
+
+
+##
+
+### get_explanations 
+```
+adt.get_explanations(X, y)
+```
+
+Outputs the decision path related to all records included in X.
+
 
 ## Interpretability Metric
 The evaluation uses a straightforward approach to measuring the global complexity of models, that is the overall-description of the model (as opposed to local complexity which measures the complexity of explanations for individual rows). For standard decision trees, it simply uses the number of nodes (a common metric, though others are commonly used, for example number of leaf nodes). For additive trees, we do this as well, but for each additive node, count it as many times as there are splits aggregated together at this node. We, therefore, measure the total number of comparisons of feature values to thresholds (the number of splits) regardless if the results are aggregated or not. Future work will consider additional metrics. 
