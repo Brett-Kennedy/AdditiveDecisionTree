@@ -4,6 +4,7 @@ from sklearn import tree
 from sklearn.base import BaseEstimator
 from sklearn.metrics import f1_score, mean_squared_error
 from info_gain import info_gain
+import matplotlib.pyplot as plt
 
 # Node types
 NOT_SPLIT = -1
@@ -23,8 +24,23 @@ def clean_data(df):
 
 
 class InternalTree:
+    """
+    Represents the collection of nodes within an Additive Decision Tree and information about these.
+    """
     def __init__(self):
-        pass 
+        self.children_left = None
+        self.children_right = None
+        self.feature = None
+        self.threshold = None
+        self.indexes = None
+        self.depths = None
+        self.can_split = None
+        self.leaf_explanation = None
+        self.node_best_threshold_arr = None
+        self.node_used_feature_arr = None
+        self.node_used_threshold_arr = None
+        self.node_measurement = None
+        self.node_best_measurement_arr = None
 
 
 class AdditiveDecisionTree(BaseEstimator):
@@ -59,14 +75,14 @@ class AdditiveDecisionTree(BaseEstimator):
 
         # Parallel arrays related to the tree that is generated
         self.tree_ = InternalTree()
-        self.tree_.children_left = [CAN_NOT_SPLIT]  # Index of the left child. -2 for leaves.
-        self.tree_.children_right = [CAN_NOT_SPLIT] # Index of the right child. -2 for leaves.
-        self.tree_.feature = [NOT_SPLIT]            # The feature used for this node. -1 for nodes not yet split. -2 for leaves.
-        self.tree_.threshold = [CAN_NOT_SPLIT]      # The threshold used for this node. -2 for leaves.
-        self.tree_.indexes = [[]]                   # The row indexes out of the full self.X covered by each node
-        self.tree_.depths = [0]                     # The depth of each node
-        self.tree_.can_split = [True]               # Indication if the igr can be calculated for this node. Generally True.
-        self.tree_.leaf_explanation = [""]          # Indicates the reason the leaf was not split further. Blank for internal nodes and leaves with full purity.
+        self.tree_.children_left = [CAN_NOT_SPLIT]   # Index of the left child. -2 for leaves.
+        self.tree_.children_right = [CAN_NOT_SPLIT]  # Index of the right child. -2 for leaves.
+        self.tree_.feature = [NOT_SPLIT]             # The feature used for this node. -1 for nodes not yet split. -2 for leaves.
+        self.tree_.threshold = [CAN_NOT_SPLIT]       # The threshold used for this node. -2 for leaves.
+        self.tree_.indexes = [[]]                    # The row indexes out of the full self.X covered by each node
+        self.tree_.depths = [0]                      # The depth of each node
+        self.tree_.can_split = [True]                # Indication if the igr can be calculated for this node. Generally True.
+        self.tree_.leaf_explanation = [""]           # Indicates the reason the leaf was not split further. Blank for internal nodes and leaves with full purity.
         self.tree_.node_best_threshold_arr = [[]]        
         self.tree_.node_used_feature_arr = [[]]
         self.tree_.node_used_threshold_arr = [[]]
@@ -83,7 +99,7 @@ class AdditiveDecisionTree(BaseEstimator):
 
     def check_nodes_arrays(self):
         """
-        Test for internal consistency.
+        Test for internal consistency. Check all parallel arrays are the same length.
         """
         assert len(self.tree_.children_left) == len(self.tree_.children_right)
         assert len(self.tree_.children_left) == len(self.tree_.feature)
@@ -106,8 +122,9 @@ class AdditiveDecisionTree(BaseEstimator):
         """
         # If possible, split a single node, creating two child nodes.
         def split_node(node_idx):
-            if (self.tree_.feature[node_idx] != NOT_SPLIT):
-                self.log(3, "Node already split. (Features[node_idx] is not -1.). Feature: " + str(self.tree_.feature[node_idx]))
+            if self.tree_.feature[node_idx] != NOT_SPLIT:
+                self.log(3, "Node already split. (Features[node_idx] is not -1.). Feature: " + \
+                            str(self.tree_.feature[node_idx]))
                 return False
 
             self.log(2, "\n\n####################################") 
@@ -141,13 +158,12 @@ class AdditiveDecisionTree(BaseEstimator):
             self.log(3, "# rows this node: ", len(X_local))
             assert len(X_local) == len(y_local), "Lengths wrong: " + str(len(X_local)) + ", " + str(len(y_local))
 
-            # todo: this should only be necessary for very large datasets, but necessary on my slow computer
-            # todo: should be a hyperparameter
+            # todo: Increase the efficiency of this. Where sampling is use, specify as a hyperparameter.
             sample_size = 1000
-            if len(X_local)>sample_size:
+            if len(X_local) > sample_size:
                 X_local = X_local.sample(n=sample_size, random_state=0)
                 y_local = y_local.loc[X_local.index]
-                assert len(X_local) == len(y_local), "Lengths wrong after taking sample: " + str(len(X_local)) + ", " + str(len(y_local))
+                assert len(X_local) == len(y_local), "Lengths incorrect after taking sample: " + str(len(X_local)) + ", " + str(len(y_local))
 
             self.log(4, "X_local:")
             if self.verbose_level >= 4:
@@ -164,7 +180,7 @@ class AdditiveDecisionTree(BaseEstimator):
                     for c2_idx in range(c1_idx+1, len(X.columns)):
                         for class_idx in range(len(self.classes_)):
                             class_name = self.classes_[class_idx]
-                            idx_arr = y_local.loc[y_local==class_name].index
+                            idx_arr = y_local.loc[y_local == class_name].index
                             X_curr_class = X_local.loc[idx_arr]                           
                             plt.scatter(X_curr_class[X_curr_class.columns[c1_idx]], 
                                         X_curr_class[X_curr_class.columns[c2_idx]], 
@@ -185,7 +201,7 @@ class AdditiveDecisionTree(BaseEstimator):
             # Check if this split would result in too few rows in either child
             X_local = self.X.loc[self.tree_.indexes[node_idx]]
             y_local = self.y.loc[self.tree_.indexes[node_idx]]
-            attribute_arr = np.where(X_local[self.X.columns[best_col_idx]]<=best_col_threshold, 0, 1)            
+            attribute_arr = np.where(X_local[self.X.columns[best_col_idx]] <= best_col_threshold, 0, 1)
             if (attribute_arr.tolist().count(0) < self.min_samples_leaf) or (attribute_arr.tolist().count(1) < self.min_samples_leaf):
                 self.tree_.feature[node_idx] = CAN_NOT_SPLIT
                 self.log(2, "Split would result in too small child nodes.")
@@ -204,33 +220,33 @@ class AdditiveDecisionTree(BaseEstimator):
             self.tree_.node_best_threshold_arr[node_idx] = threshold_arr
             
             # Create nodes for the 2 children
-            self.tree_.children_left.extend([-2,-2])
-            self.tree_.children_right.extend([-2,-2])
-            self.tree_.feature.extend([-1,-1])
-            self.tree_.threshold.extend([-2,-2])
-            self.tree_.indexes.extend([[],[]])
+            self.tree_.children_left.extend([-2, -2])
+            self.tree_.children_right.extend([-2, -2])
+            self.tree_.feature.extend([-1, -1])
+            self.tree_.threshold.extend([-2, -2])
+            self.tree_.indexes.extend([[], []])
             new_depth = self.tree_.depths[node_idx]+1
             self.tree_.depths.extend([new_depth, new_depth])
-            self.tree_.can_split.extend([True,True])
-            self.tree_.leaf_explanation.extend(["",""])
-            self.tree_.node_measurement.extend([-2,-2]) 
-            self.tree_.node_best_measurement_arr.extend([[],[]]) 
-            self.tree_.node_best_threshold_arr.extend([[],[]])
-            self.tree_.node_used_feature_arr.extend([[],[]])
-            self.tree_.node_used_threshold_arr.extend([[],[]])
+            self.tree_.can_split.extend([True, True])
+            self.tree_.leaf_explanation.extend(["", ""])
+            self.tree_.node_measurement.extend([-2, -2])
+            self.tree_.node_best_measurement_arr.extend([[], []])
+            self.tree_.node_best_threshold_arr.extend([[], []])
+            self.tree_.node_used_feature_arr.extend([[], []])
+            self.tree_.node_used_threshold_arr.extend([[], []])
 
             # Set the indexes of the two child nodes
-            self.tree_.indexes[new_left_idx] = X_local.iloc[np.where(attribute_arr<=0)[0]].index
-            self.tree_.indexes[new_right_idx] = X_local.iloc[np.where(attribute_arr>0)[0]].index
+            self.tree_.indexes[new_left_idx] = X_local.iloc[np.where(attribute_arr <= 0)[0]].index
+            self.tree_.indexes[new_right_idx] = X_local.iloc[np.where(attribute_arr > 0)[0]].index
 
             # Update the subclass-specific stats about the new nodes
             self.update_node_stats(new_left_idx, new_right_idx)
 
             # Log messages
-            self.log(5, "where arr 1:", np.where(attribute_arr<=0)[0]) 
-            self.log(5, "where arr 2:", np.where(attribute_arr>0)[0]) 
-            self.log(3, "# rows in left child: ", len(np.where(attribute_arr<=0)[0]))
-            self.log(3, "# rows in right child: ", len(np.where(attribute_arr>0)[0]))
+            self.log(5, "where arr 1:", np.where(attribute_arr <= 0)[0])
+            self.log(5, "where arr 2:", np.where(attribute_arr > 0)[0])
+            self.log(3, "# rows in left child: ", len(np.where(attribute_arr <= 0)[0]))
+            self.log(3, "# rows in right child: ", len(np.where(attribute_arr > 0)[0]))
             self.log(5, "new_left_idx indexes", self.tree_.indexes[new_left_idx])
             self.log(5, "new_right_idx indexes", self.tree_.indexes[new_right_idx])
             
@@ -256,7 +272,7 @@ class AdditiveDecisionTree(BaseEstimator):
         # Create additive nodes
         if self.allow_additive_nodes:
             self.create_additive_nodes()
-            self.remove_stranded_nodes()
+            self.remove_disconnected_nodes()
 
         return self
 
@@ -276,15 +292,19 @@ class AdditiveDecisionTree(BaseEstimator):
         self.subclass_output_tree() # todo: probably have subclasses call super.outputtree()
         print("********************************************************\n")
 
-    def remove_stranded_nodes(self):
+    def remove_disconnected_nodes(self):
+        """
+        Remove any nodes that were disconnected from the tree during pruning.
+        :return: None
+        """
         node_reachable_arr = [0]*len(self.tree_.feature)
         node_reachable_arr[0] = 1
         for i in range(len(self.tree_.children_left)):
             node_idx = self.tree_.children_left[i]
-            if (node_idx>=0 and node_reachable_arr[i]==1):
+            if (node_idx >= 0) and (node_reachable_arr[i] == 1):
                 node_reachable_arr[node_idx]=1 
             node_idx = self.tree_.children_right[i]
-            if (node_idx>=0 and node_reachable_arr[i]==1):
+            if (node_idx >= 0) and (node_reachable_arr[i] == 1):
                 node_reachable_arr[node_idx]=1 
 
         for e in range(len(node_reachable_arr)-1, -1, -1):
@@ -325,7 +345,7 @@ class AdditiveDecisionTree(BaseEstimator):
 
     def get_model_complexity(self):
         """
-        returns global complexity. Count each node as 1, except additive nodes, which count based on the number
+        Returns global complexity. Count each node as 1, except additive nodes, which count based on the number
         of aggregations.
         todo: also measure avg. local complexity
         """
@@ -335,17 +355,24 @@ class AdditiveDecisionTree(BaseEstimator):
                 complexity += len(self.tree_.node_used_feature_arr[i])
         return complexity
 
-    def _predict(self, predict_X, testing_additive=True):  
-        header_log_level = 2 if testing_additive==False else 5
+    def _predict(self, predict_X, testing_additive=True):
+        """
+        Find the prediction and decision paths for each record provided
+        :param predict_X: matrix of values. Must match the matrix used for fitting.
+        :param testing_additive: Used to set log level
+        :return: array of predictions and array of decision paths. Both match the length of predict_X.
+        """
+
+        header_log_level = 2 if (not testing_additive) else 5
         self.log(header_log_level, "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
         self.log(2, "PREDICT")
         self.log(header_log_level, "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
 
         def find_leaf(row):
             """
-
+            Find the leaf node for the specified row
             :param row: pandas series
-            :return:
+            :return: node id of the leaf node and path as an array of node ids
             """
             self.log(5, "row:", row)
             curr_node = 0
@@ -369,13 +396,17 @@ class AdditiveDecisionTree(BaseEstimator):
         for row_idx in range(len(predict_X)):
             row = predict_X.iloc[row_idx]
             leaf_idx, path = find_leaf(row)
-            pred_arr.append(self.get_prediction(leaf_idx, row, row_idx))
+            pred_arr.append(self.get_prediction(leaf_idx, row, row_idx))  # Call method in subclass
             decision_path_arr.append(path)
             row_num += 1
         return pred_arr, decision_path_arr
 
     def predict(self, predict_X, testing_additive=False):
         """
+        Predict for all rows in predict_X
+        :param predict_X: matrix of values. Must match the format used for fitting.
+        :param testing_additive: Used to set log level.
+        :return: array of predictions. The length matches the length of predict_X.
         """
         pred, _ = self._predict(predict_X, testing_additive)
         return pred
@@ -412,7 +443,7 @@ class AdditiveDecisionTree(BaseEstimator):
                     if node_idx > 0:
                         and_indicator = "\nAND "
                     sign_indicator = "greater than"
-                    if (path[path_element_idx+1] == self.tree_.children_left[node_idx]):
+                    if path[path_element_idx+1] == self.tree_.children_left[node_idx]:
                         sign_indicator = "less than"
                     expl += f"\n{and_indicator}{self.X.columns[col_idx]} is {sign_indicator} "
                     expl += f"{self.tree_.threshold[node_idx]} \n    (has value: {predict_X.iloc[path_idx][col_name]})"
@@ -438,11 +469,13 @@ class AdditiveDecisionTreeClasssifier(AdditiveDecisionTree):
                     verbose_level=0,
                     allow_additive_nodes=True,
                     max_added_splits_per_node=5):
-        super().__init__(min_samples_split, min_samples_leaf, max_depth, verbose_level, allow_additive_nodes, max_added_splits_per_node)
+        super().__init__(min_samples_split, min_samples_leaf, max_depth, verbose_level, allow_additive_nodes,
+                         max_added_splits_per_node)
 
         # Summary information about the class distributions at each node
         self.classes_ = []      # The set of unique target classes in y. Used to maintain a consistent order. 
-        self.class_counts = []  # Each node contains an array giving the count of each class, in the order defined by self.classes_
+        self.class_counts = []  # Each node contains an array giving the count of each class, in the order defined
+                                #   by self.classes_
         self.class_counts_arr = [[]]
 
     def init_variables(self, y):
@@ -499,8 +532,7 @@ class AdditiveDecisionTreeClasssifier(AdditiveDecisionTree):
         if row_idx == display_row: print("class_votes: ", class_votes)
         highest_vote = np.argmax(class_votes)
         additive_votes_str += f"\nThe class with the most votes is {self.classes_[highest_vote]}"
-        if row_idx == display_row:
-            print("highest_vote: ", highest_vote)
+        if row_idx == display_row: print("highest_vote: ", highest_vote)
         self.additive_votes[row_idx] = additive_votes_str
         return self.classes_[highest_vote]
 
@@ -529,9 +561,10 @@ class AdditiveDecisionTreeClasssifier(AdditiveDecisionTree):
             stump = tree.DecisionTreeClassifier(random_state=0, max_depth=1) # Used to get thresholds
             stump.fit(X_local[[X_local.columns[col_idx]]].values.reshape(-1,1), y_local)
             threshold = stump.tree_.threshold[0]            
-            attribute_arr = np.where(X_local[X_local.columns[col_idx]]<=threshold, 0, 1)                
+            attribute_arr = np.where(X_local[X_local.columns[col_idx]] <= threshold, 0, 1)
             igr = info_gain.info_gain_ratio(attribute_arr, y_local)
-            self.log(4, "node_idx:", node_idx, ", col_idx:", col_idx, ", igr: ", round(igr,2), ", threshold:", round(threshold,2))                                        
+            self.log(4, "node_idx:", node_idx, ", col_idx:", col_idx, ", igr: ", round(igr, 2),
+                        ", threshold:", round(threshold, 2))
             igr_arr.append(igr)                
             threshold_arr.append(threshold)
             if igr > best_col_igr:
@@ -562,10 +595,10 @@ class AdditiveDecisionTreeClasssifier(AdditiveDecisionTree):
             good_cols = []
             good_thresholds = []
             for col_idx, igr_val in enumerate(self.tree_.node_best_measurement_arr[node_index]):
-                if igr_val > 0.9 * used_igr or igr_val > 0.4: # todo: make hyperparameters
+                if igr_val > 0.9 * used_igr or igr_val > 0.4:  # todo: make hyperparameters
                     good_cols.append(col_idx)
                     good_thresholds.append(self.tree_.node_best_threshold_arr[node_index][col_idx])
-            if (len(good_cols)>1):
+            if len(good_cols) > 1:
                 # Get the training score given the current tree
                 y_pred = self.predict(self.X, testing_additive=True) 
                 curr_train_score = f1_score(self.y, y_pred, average='macro')
@@ -624,7 +657,7 @@ class AdditiveDecisionTreeClasssifier(AdditiveDecisionTree):
             for i in range(len(checked_nodes)):
                 left_child_idx = self.tree_.children_left[i]
                 right_child_idx = self.tree_.children_right[i]
-                if (checked_nodes[i]==False and checked_nodes[left_child_idx]==True and checked_nodes[right_child_idx]==True):
+                if (not checked_nodes[i]) and checked_nodes[left_child_idx] and checked_nodes[right_child_idx]:
                     check_node(i)
                     checked_nodes[i]=True
             count_unchecked = checked_nodes.count(False)
@@ -635,10 +668,9 @@ class AdditiveDecisionTreeClasssifier(AdditiveDecisionTree):
         else:
             return self.get_majority_class(leaf_idx)
 
-    # todo: don't call these 'subclass'
     def subclass_output_tree(self):
         print(f"\nClass counts:\n{self.class_counts}")
-        print(f"\nLeaf Class Counts:\n{[bx for ax,bx in zip(self.tree_.feature,self.class_counts) if ax <0]}")
+        print(f"\nLeaf Class Counts:\n{[bx for ax,bx in zip(self.tree_.feature,self.class_counts) if ax < 0]}")
         print(f"\nNode igr: \n{self.tree_.node_measurement}")
 
     def pop_unused_array_elements(self, e):
@@ -700,13 +732,13 @@ class AdditiveDecisionTreeRegressor(AdditiveDecisionTree):
             mse_gain = mse_before - mse_after
             mse_gain_arr.append(mse_gain)                
             threshold_arr.append(threshold)
-            if (mse_gain > best_col_mse_gain and len(left_arr) >= self.min_samples_leaf and len(right_arr) >= self.min_samples_leaf):
+            if (mse_gain > best_col_mse_gain) and (len(left_arr) >= self.min_samples_leaf) and (len(right_arr) >= self.min_samples_leaf):
                 best_col_idx = col_idx
                 best_col_threshold = threshold
                 best_col_mse_gain = mse_gain 
 
         good_split_found = True
-        if (len(X_local) < 50) and ((best_col_mse_gain/mse_before)<0.01):
+        if (len(X_local) < 50) and ((best_col_mse_gain/mse_before) < 0.01):
             # print("case 1")
             self.log(2, "Cannot split this node. (Gain in MSE is too low given the number of rows)  ")
             self.tree_.feature[node_idx] = -2
@@ -763,12 +795,12 @@ class AdditiveDecisionTreeRegressor(AdditiveDecisionTree):
                     else:
                         mean_left = np.array(left_arr).mean()
                         mean_right = np.array(right_arr).mean()
-                        new_pred_y = [mean_left if over_bool==False else mean_right for over_bool in over_threshold_bool_arr]
+                        new_pred_y = [mean_left if over_bool == False else mean_right for over_bool in over_threshold_bool_arr]
                         new_pred_y_arr.append(new_pred_y)                    
                         new_average_y_arr.append((mean_left, mean_right))
 
                 # Remove any elements with nan's
-                for i in range(len(good_cols)-1,-1,-1):
+                for i in range(len(good_cols)-1, -1, -1):
                     if new_average_y_arr[i][0] is np.NaN:
                         good_cols.pop(i)
                         good_thresholds.pop(i)
@@ -813,7 +845,7 @@ class AdditiveDecisionTreeRegressor(AdditiveDecisionTree):
             for i in range(len(checked_nodes)):
                 left_child_idx = self.tree_.children_left[i]
                 right_child_idx = self.tree_.children_right[i]
-                if (checked_nodes[i]==False and checked_nodes[left_child_idx]==True and checked_nodes[right_child_idx]==True):
+                if (not checked_nodes[i]) and (checked_nodes[left_child_idx]) and (checked_nodes[right_child_idx]):
                     check_node(i)
                     checked_nodes[i] = True
             count_unchecked = checked_nodes.count(False)
