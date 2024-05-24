@@ -5,6 +5,8 @@ This tool provides an implementation of a decision tree, similar to a standard d
 
 This tool provides, on the whole, comparable accuracy to standard decision trees, but in many cases provides greater accuracy and/or improved interpretability. As such, it can be a useful tool for generating interpretable models and may be considered a useful XAI tool. It is not intended to be competitive with approaches such as boosting or neural networks in terms of accuracy, but is simply a tool to generate interpretable models. It can often produce models comparable in accuracy to deeper standard decision trees, while having a lower overall complexity compared to these. 
 
+For an overview, see Medium article: https://medium.com/towards-data-science/additive-decision-trees-85f2feda2223
+
 #### Limitations of Decision Trees
 This tool addresses some well-known limitations of decision trees, in particular their limited stability, their necessity to split based on fewer and fewer samples lower in the trees, repeated sub-trees, and their tendency to overfit if not restricted or pruned. These limitations are typically addressed by ensembling decision trees, either through bagging or boosting, which results in highly uninterpretable, though generally more accurate, models. Constructing oblivious trees (this is done, for example, within CatBoost) and oblique decision trees (see: [RotationFeatures](https://github.com/Brett-Kennedy/RotationFeatures)) aare other approaches to mitigate some of these limitations, and also often produces more stable trees. 
 
