@@ -2,9 +2,8 @@ import numpy as np
 from sklearn import tree
 from warnings import filterwarnings
 
-# Todo: update to use the pip install
-import sys  
-sys.path.insert(0, 'C:\python_projects\AdditiveDecisionTree_project\AdditiveDecisionTree') # todo: rename to _project
+import sys
+sys.path.insert(0, 'C:\python_projects\AdditiveDecisionTree_project\AdditiveDecisionTree')
 from AdditiveDecisionTree import AdditiveDecisionTreeClasssifier, AdditiveDecisionTreeRegressor
 
 sys.path.insert(0, 'C:\python_projects\DatasetsEvaluator_project\DatasetsEvaluator')
@@ -16,10 +15,10 @@ np.random.seed(0)
 
 # These specify how many datasets are used in the tests below. Ideally about 50 to 100 datasets would be used,
 # but these may be set lower. Set to 0 to skip tests. 
-NUM_DATASETS_CLASSIFICATION_DEFAULT = 4
-NUM_DATASETS_CLASSIFICATION_GRID_SEARCH = 1
-NUM_DATASETS_REGRESSION_DEFAULT = 4
-NUM_DATASETS_REGRESSION_GRID_SEARCH = 1
+NUM_DATASETS_CLASSIFICATION_DEFAULT = 100
+NUM_DATASETS_CLASSIFICATION_GRID_SEARCH = 0
+NUM_DATASETS_REGRESSION_DEFAULT = 0
+NUM_DATASETS_REGRESSION_GRID_SEARCH = 0
 
 
 def print_header(test_name):
@@ -90,9 +89,9 @@ def test_regression_default_parameters(datasets_tester, partial_result_folder, r
 	adt = AdditiveDecisionTreeRegressor(allow_additive_nodes=True)
 
 	summary_df, saved_file_name = datasets_tester.run_tests(
-		estimators_arr = [
-			("DT", "Original Features", "Default", pipe1),
-			("DT", "Rotation-based Features", "Default", pipe2)],
+		estimators_arr=[
+			("DT", "Original Features", "Default", dt),
+			("DT", "Rotation-based Features", "Default", adt)],
 		num_cv_folds=3,
 		show_warnings=True,
 		results_folder=results_folder,
@@ -209,8 +208,7 @@ def main():
 		use_automatic_exclude_list=True,
 		preview_data=False,
 		save_local_cache=True,
-		check_local_cache=True,
-		path_local_cache=cache_folder)
+		check_local_cache=True)
 
 	test_regression_default_parameters(datasets_tester, partial_result_folder, results_folder)
 
@@ -220,8 +218,7 @@ def main():
 		use_automatic_exclude_list=True,
 		preview_data=False,
 		save_local_cache=True,
-		check_local_cache=True,
-		path_local_cache=cache_folder)
+		check_local_cache=True)
 
 	test_regression_grid_search(datasets_tester, partial_result_folder, results_folder)
 
