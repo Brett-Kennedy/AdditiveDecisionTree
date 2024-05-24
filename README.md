@@ -90,7 +90,7 @@ Here 'ADT' refers to Additive Decision Trees. The Train-Test Gap was found subtr
 AdditiveTrees did very similar to standard decision trees with respect to accuracy, though often do better. The complextity is, however, considerably lower. This allows users to understand the models considering fewer overall rules. 
 
 Results over 100 Classification sets: 
-![Result Plot](https://github.com/Brett-Kennedy/AdditiveDecisionTree/blob/main/Results/results_18_08_2021_14_26_34_plot.png)
+![Result Plot](https://github.com/Brett-Kennedy/AdditiveDecisionTree/blob/main/Results/results_24_05_2024_10_17_47_plot.png)
 
 The first plot tracks the 100 datasets on the x-axis, with F1 score (macro) on y-axis. The second tracks the same 100 datasets on the x-axis, and model complexity on the y-axis. 
 
