@@ -4,10 +4,8 @@ from sklearn import tree
 from sklearn.base import BaseEstimator
 from sklearn.metrics import f1_score, mean_squared_error
 from info_gain import info_gain
-# import math
-# from enum import Enum
 
-
+# Node types
 NOT_SPLIT = -1
 CAN_NOT_SPLIT = -2
 ADDITIVE_NODE = -100
@@ -19,7 +17,7 @@ tableau_palette_list = ["tab:blue", "tab:orange", "tab:green", "tab:red", "tab:p
 
 
 def clean_data(df):
-    df = df.fillna(0.0) # todo: fill as in datasets evaluator. including one-hot encoding cat cols
+    df = df.fillna(0.0)  # todo: fill as in datasets evaluator. including one-hot encoding cat cols
     df = df.replace([np.inf, -np.inf], 0.0)                
     return df
 
@@ -37,6 +35,16 @@ class AdditiveDecisionTree(BaseEstimator):
                     verbose_level=0,
                     allow_additive_nodes=True,
                     max_added_splits_per_node=5):
+        """
+        :param min_samples_split: As with standard decision trees. The minimum number of samples in a node to allow
+            further splitting.
+        :param min_samples_leaf: As with standard decision trees. The minimum number of samples in that would result
+            in a leaf node to allow further splitting.
+        :param max_depth: As with standard decision trees. The maximum path length from the root to any leaf node.
+        :param verbose_level: Controls the display of output during fitting and predicting.
+        :param allow_additive_nodes: If False, behaves similar to standard decision tree.
+        :param max_added_splits_per_node: The maximimum number of splits that may be included in any additive node.
+        """
 
         # Variables related to the fitting process
         self.min_samples_split = min_samples_split
@@ -62,16 +70,21 @@ class AdditiveDecisionTree(BaseEstimator):
         self.tree_.node_best_threshold_arr = [[]]        
         self.tree_.node_used_feature_arr = [[]]
         self.tree_.node_used_threshold_arr = [[]]
-        self.tree_.node_measurement = [CAN_NOT_SPLIT]  # The information gain ratio of the split at each node. -2 for leaves.
+        self.tree_.node_measurement = [CAN_NOT_SPLIT]  # The information gain ratio (IGR) of the split at each node. -2 for leaves.
         self.tree_.node_best_measurement_arr = [[]]
                 
         # Logging information
         self.verbose_level = verbose_level
 
     def __str__(self):
-        return f"min_samples_split: {self.min_samples_split}, min_samples_leaf: {self.min_samples_leaf}, max_depth: {self.max_depth}, allow_additive_nodes: {self.allow_additive_nodes}, max_added_splits_per_node: {self.max_added_splits_per_node}"
+        return (f"min_samples_split: {self.min_samples_split}, min_samples_leaf: {self.min_samples_leaf}, "
+                f"max_depth: {self.max_depth}, allow_additive_nodes: {self.allow_additive_nodes}, "
+                f"max_added_splits_per_node: {self.max_added_splits_per_node}")
 
     def check_nodes_arrays(self):
+        """
+        Test for internal consistency.
+        """
         assert len(self.tree_.children_left) == len(self.tree_.children_right)
         assert len(self.tree_.children_left) == len(self.tree_.feature)
         assert len(self.tree_.children_left) == len(self.tree_.threshold)
@@ -605,8 +618,6 @@ class AdditiveDecisionTreeClasssifier(AdditiveDecisionTree):
                 #curr_train_score = f1_score(self.y, y_pred, average='macro')
                 #print("  curr_train_score restored: ", curr_train_score)
 
-        #self.output_tree()
-
         self.class_counts_arr = [[]]*len(self.tree_.feature)
 
         # todo: recode to just go through backwards
@@ -718,7 +729,6 @@ class AdditiveDecisionTreeRegressor(AdditiveDecisionTree):
         return best_col_idx, best_col_threshold, best_col_mse_gain, mse_gain_arr, threshold_arr, good_split_found
 
     def create_additive_nodes(self):
-
         # Potentially replace any non-leaf nodes with additive nodes. Doing this, we do not change the size
         # of the tree or the parallel arrays, though may leave some nodes unreachable. 
         def check_node(node_index):
@@ -792,7 +802,6 @@ class AdditiveDecisionTreeRegressor(AdditiveDecisionTree):
 
                 # If the additive node did not improve the accuracy, return the tree
                 if updated_train_mse > curr_train_mse:
-                    #print("  self.tree_.feature_arr: ", self.tree_.node_used_feature_arr)
                     self.tree_.feature[node_index] = used_col
                     self.tree_.node_used_feature_arr[node_index] = []
                     self.tree_.node_used_threshold_arr[node_index] = []
@@ -816,43 +825,27 @@ class AdditiveDecisionTreeRegressor(AdditiveDecisionTree):
                 if (checked_nodes[i]==False and checked_nodes[left_child_idx]==True and checked_nodes[right_child_idx]==True):
                     check_node(i)
                     checked_nodes[i]=True
-                #print("checked_nodes: ", checked_nodes)
             count_unchecked = checked_nodes.count(False)
 
-        #print("Tree after create additive nodes:")
-        #self.output_tree()
-
     def get_multiple_spits_average_prediction(self, leaf_idx, row):
-        # print(f"inside get_multiple_spits_average_prediction. leaf_idx: {leaf_idx}")
-        # print("row:", row)
-        # print(f"node_used_feature_arr[node_index]: {self.tree_.node_used_feature_arr[leaf_idx]} ")
-        # print(f"node_used_threshold_arr[node_index]: {self.tree_.node_used_threshold_arr[leaf_idx]}")
-        # print(f"average_y_value_arr[leaf_idx]: {self.average_y_value_arr[leaf_idx]}")
         num_features_in_node = len(self.tree_.node_used_feature_arr[leaf_idx])
-        # print("num_features_used: ", num_features_used)
         average_prediction = 0.0
         num_features_used = 0
         for i in range(num_features_in_node):
             if row[self.tree_.node_used_feature_arr[leaf_idx][i]] <= self.tree_.node_used_threshold_arr[leaf_idx][i]:
-                #print(f"{i}: Under")
                 split_prediction = self.average_y_value_arr[leaf_idx][i][0]
             else:
-                #print(f"{i}: Over")
                 split_prediction = self.average_y_value_arr[leaf_idx][i][1]
             if not split_prediction is np.NaN:
                 average_prediction += split_prediction
                 num_features_used+=1
 
-        # print("returning: ", average_prediction / num_features_used)
         return average_prediction / num_features_used
 
     def get_prediction(self, leaf_idx, row, row_idx):
-        #print(f"Predicting for row_idx: {row_idx}, leaf: {leaf_idx}")
         if self.tree_.feature[leaf_idx] == ADDITIVE_NODE:
-            #print("In an additive leaf")
-            return self.get_multiple_spits_average_prediction(leaf_idx, row)   
+            return self.get_multiple_spits_average_prediction(leaf_idx, row)
         else:
-            #print("In a regular leaf")
             return self.average_y_value[leaf_idx]
 
     def subclass_output_tree(self):
